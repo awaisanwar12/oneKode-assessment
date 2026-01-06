@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export interface UserDocument extends Document {
   name: string;
@@ -9,6 +10,7 @@ export interface UserDocument extends Document {
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
+  getSignedJwtToken(): string;
 }
 
 const userSchema = new Schema<UserDocument>(
@@ -51,6 +53,12 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+userSchema.methods.getSignedJwtToken = function (): string {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+};
+
 
 const User = mongoose.model<UserDocument>('User', userSchema);
 
