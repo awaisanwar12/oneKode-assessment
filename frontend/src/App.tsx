@@ -1,10 +1,30 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import Register from './pages/Register';
+
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-blue-600">
-        Frontend Initialized
-      </h1>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+          <Router>
+            <div className="container mx-auto px-4"> 
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Routes>
+            </div>
+          </Router>
+          <ToastContainer />
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 
