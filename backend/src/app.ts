@@ -6,6 +6,9 @@ import { errorHandler } from './middleware/error.middleware';
 import { morganMiddleware } from './middleware/logger.middleware';
 import { AppError } from './utils/AppError';
 import authRoutes from './routes/auth.routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerOptions from './config/swagger';
 
 const app: Express = express();
 
@@ -31,6 +34,10 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Enable CORS
 app.use(cors());
+
+// Swagger Documentation
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routes
 app.use('/api/auth', authRoutes);
