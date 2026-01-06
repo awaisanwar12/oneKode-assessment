@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/error.middleware';
 import { morganMiddleware } from './middleware/logger.middleware';
 import { AppError } from './utils/AppError';
+import authRoutes from './routes/auth.routes';
 
 const app: Express = express();
 
@@ -32,6 +33,8 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cors());
 
 // Routes
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
