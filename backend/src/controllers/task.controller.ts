@@ -23,7 +23,7 @@ export const createTask = async (
       assignedTo,
       teamId,
       dueDate,
-      createdBy: req.user ? req.user.id : undefined,
+      createdBy: (req as any).user ? (req as any).user.id : undefined,
     });
 
     res.status(201).json({

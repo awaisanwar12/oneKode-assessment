@@ -41,7 +41,7 @@ export const protect = async (
         return next(new AppError('The user belonging to this token does no longer exist.', 401));
     }
 
-    req.user = user;
+    (req as any).user = user;
     next();
   } catch (err) {
     return next(new AppError('Not authorized to access this route', 401));
@@ -50,10 +50,10 @@ export const protect = async (
 
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!(req as any).user || !roles.includes((req as any).user.role)) {
       return next(
         new AppError(
-          `User role ${req.user?.role} is not authorized to access this route`,
+          `User role ${(req as any).user?.role} is not authorized to access this route`,
           403
         )
       );

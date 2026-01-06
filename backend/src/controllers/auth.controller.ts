@@ -98,7 +98,7 @@ export const getMe = async (
 ) => {
   try {
     // req.user is set by auth middleware (to be implemented)
-    const user = await User.findById(req.user.id);
+    const user = await User.findById((req as any).user.id);
 
     res.status(200).json({
       success: true,
