@@ -7,6 +7,7 @@ import { morganMiddleware } from './middleware/logger.middleware';
 import { AppError } from './utils/AppError';
 import authRoutes from './routes/auth.routes';
 import teamRoutes from './routes/team.routes';
+import taskRoutes from './routes/task.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerOptions from './config/swagger';
@@ -43,6 +44,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
+app.use('/api/tasks', taskRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
