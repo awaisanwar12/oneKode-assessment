@@ -1,9 +1,11 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useTasks } from '../hooks/useTasks';
 import { Task } from '../types';
+import { FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
-const TaskBoard = () => {
-    const { tasks, isLoading, isError, updateTask } = useTasks();
+const TaskBoard = ({ filters }: { filters?: any }) => {
+    const { tasks, isLoading, isError, updateTask, deleteTask } = useTasks(filters);
 
     if (isLoading) return <div>Loading board...</div>;
     if (isError) return <div>Error loading board.</div>;
@@ -41,6 +43,18 @@ const TaskBoard = () => {
         high: 'bg-red-100 text-red-800'
     };
 
+
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Prevent drag start when clicking delete
+        if(window.confirm('Are you sure you want to delete this task?')) {
+            try {
+                await deleteTask(id);
+                toast.success('Task deleted');
+            } catch (error) {
+                toast.error('Failed to delete task');
+            }
+        }
+    }
 
     return (
         <div className="flex flex-col md:flex-row gap-4 overflow-x-auto pb-4 h-full">
@@ -81,6 +95,13 @@ const TaskBoard = () => {
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
                                                             {task.priority.toUpperCase()}
                                                         </span>
+                                                        <button 
+                                                            onClick={(e) => handleDelete(e, task._id)}
+                                                            className="text-gray-400 hover:text-red-500 transition-colors"
+                                                            title="Delete Task"
+                                                        >
+                                                            <FaTrash size={12} />
+                                                        </button>
                                                     </div>
                                                     <h4 className="text-sm font-bold text-gray-800 mb-1">{task.title}</h4>
                                                      {task.description && (

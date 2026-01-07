@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTeams } from '../hooks/useTeams';
 import CreateTeam from '../components/CreateTeam';
 import CreateTask from '../components/CreateTask';
 import TaskBoard from '../components/TaskBoard';
@@ -9,6 +10,12 @@ import TeamManagement from '../components/TeamManagement';
 function Dashboard() {
   const navigate = useNavigate();
   const { user, logout, isLoading } = useAuth();
+  const { teams } = useTeams(); // Fetch teams for filter
+  
+  const [filters, setFilters] = useState({
+    priority: '',
+    teamId: ''
+  });
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -49,10 +56,35 @@ function Dashboard() {
 
           {/* Right Column: Task Board */}
           <div className="xl:col-span-3">
-             <div className="mb-4 flex items-center justify-between">
+             <div className="mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <h2 className="text-xl font-bold text-gray-800">Task Board</h2>
+                
+                {/* Filters */}
+                <div className="flex gap-2">
+                    <select 
+                        className="border rounded p-2 text-sm bg-white"
+                        value={filters.priority}
+                        onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+                    >
+                        <option value="">All Priorities</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+
+                    <select 
+                        className="border rounded p-2 text-sm bg-white"
+                        value={filters.teamId}
+                        onChange={(e) => setFilters(prev => ({ ...prev, teamId: e.target.value }))}
+                    >
+                        <option value="">All Teams</option>
+                        {teams?.map(team => (
+                            <option key={team._id} value={team._id}>{team.name}</option>
+                        ))}
+                    </select>
+                </div>
              </div>
-             <TaskBoard />
+             <TaskBoard filters={filters} />
           </div>
         </div>
       </div>

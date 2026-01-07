@@ -9,11 +9,14 @@ const CreateTask = () => {
         description: '',
         priority: 'medium',
         teamId: '',
+        assignedTo: '',
         dueDate: ''
     });
 
     const { teams } = useTeams();
     const { createTask } = useTasks();
+
+    const selectedTeam = teams?.find(t => t._id === formData.teamId);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData({...formData, [e.target.name]: e.target.value});
@@ -33,6 +36,7 @@ const CreateTask = () => {
                 description: '',
                 priority: 'medium',
                 teamId: '',
+                assignedTo: '',
                 dueDate: ''
             });
             toast.success('Task created successfully');
@@ -92,6 +96,19 @@ const CreateTask = () => {
                     <option value="low">Low Priority</option>
                     <option value="medium">Medium Priority</option>
                     <option value="high">High Priority</option>
+                </select>
+
+                <select 
+                    name="assignedTo" 
+                    value={formData.assignedTo} 
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                    disabled={!selectedTeam}
+                >
+                    <option value="">Assign To (Optional)</option>
+                    {selectedTeam?.members.map(member => (
+                        <option key={member._id} value={member._id}>{member.name} ({member.email})</option>
+                    ))}
                 </select>
 
                 <input 
