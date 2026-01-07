@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import CreateTeam from '../components/CreateTeam';
 import CreateTask from '../components/CreateTask';
 import TaskBoard from '../components/TaskBoard';
+import TeamManagement from '../components/TeamManagement';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -39,9 +40,10 @@ function Dashboard() {
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-          {/* Left Column: Actions */}
-          <div className="xl:col-span-1 space-y-8">
+          {/* Left Column: Team Management & Actions */}
+          <div className="xl:col-span-1 space-y-8 h-fit">
              <CreateTeam />
+             <TeamManagement />
              <CreateTask />
           </div>
 

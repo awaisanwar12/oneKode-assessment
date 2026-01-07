@@ -23,10 +23,21 @@ export const useTeams = () => {
     },
   });
 
+  const addMemberMutation = useMutation({
+    mutationFn: async ({ teamId, email }: { teamId: string; email: string }) => {
+      const res = await api.post(`/teams/${teamId}/members`, { email });
+      return res.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+  });
+
   return {
     teams,
     isLoading,
     isError,
     createTeam: createTeamMutation.mutateAsync,
+    addMember: addMemberMutation.mutateAsync,
   };
 };
