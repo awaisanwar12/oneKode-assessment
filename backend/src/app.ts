@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/error.middleware';
 import { morganMiddleware } from './middleware/logger.middleware';
@@ -18,6 +19,9 @@ const app: Express = express();
 
 // Set security HTTP headers
 app.use(helmet());
+
+// Cookie Parser
+app.use(cookieParser() as any);
 
 // Development logging
 app.use(morganMiddleware);

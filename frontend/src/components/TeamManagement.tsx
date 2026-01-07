@@ -70,6 +70,10 @@ const TeamCard = ({ team, onAddMember }: { team: Team, onAddMember: (teamId: str
 const TeamManagement = () => {
     const { teams, isLoading, isError, addMember } = useTeams();
 
+    const handleAddMember = async (teamId: string, email: string) => {
+        await addMember({ teamId, email });
+    };
+
     if (isLoading) return <div>Loading teams...</div>;
     if (isError) return <div>Error loading teams.</div>;
 
@@ -84,7 +88,7 @@ const TeamManagement = () => {
              </div>
             <div className="grid grid-cols-1 gap-6">
                 {teams.map(team => (
-                    <TeamCard key={team._id} team={team} onAddMember={addMember} />
+                    <TeamCard key={team._id} team={team} onAddMember={handleAddMember} />
                 ))}
             </div>
         </div>

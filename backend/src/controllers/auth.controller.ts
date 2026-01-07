@@ -6,18 +6,19 @@ import { AppError } from '../utils/AppError';
 const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
   const token = user.getSignedJwtToken();
 
-  const options = {
+  const options: any = {
     expires: new Date(
       Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     ),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   };
 
   res
     .status(statusCode)
     .cookie('token', token, options)
-    .json({ success: true, token });
+    .json({ success: true, token, data: user });
 };
 
 // @desc    Register user

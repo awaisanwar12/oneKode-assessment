@@ -42,18 +42,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sync React Query data with local state
   useEffect(() => {
+    console.log('AuthContext Effect:', { data, isLoading, isError, userState: user });
     if (data) {
+      console.log('Setting user from Query Data:', data);
       setUser(data);
-    } else if (isError || data === null) {
-      setUser(null);
+    } else if (isError || (data === null && !isLoading)) {
+       console.log('Clearing user state');
+       setUser(null);
     }
-  }, [data, isError]);
+  }, [data, isError, isLoading]);
 
   const login = async (userData: any) => {
+    console.log('Login called with:', userData);
     const res = await api.post('/auth/login', userData);
-    setUser(res.data.data || res.data.user); // Adapt based on exact backend response
+    console.log('Login Response:', res.data);
+    
+    // Set user immediately if backend returns it
+    const userFromResponse = res.data.data || res.data.user;
+    if (userFromResponse) {
+        setUser(userFromResponse);
+    }
+    
     // Invalidate query to ensure data consistency
-    queryClient.invalidateQueries({ queryKey: ['authUser'] });
+    await queryClient.invalidateQueries({ queryKey: ['authUser'] });
   };
 
   const register = async (userData: any) => {

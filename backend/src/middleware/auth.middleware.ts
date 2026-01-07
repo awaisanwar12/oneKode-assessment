@@ -24,10 +24,12 @@ export const protect = async (
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-
+  
   if (!token) {
+    console.log('No token found. Cookies:', req.cookies);
     return next(new AppError('Not authorized to access this route', 401));
   }
+
 
   try {
     const decoded = jwt.verify(
