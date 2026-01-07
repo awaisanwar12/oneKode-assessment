@@ -31,7 +31,7 @@ function Register() {
     }
 
     try {
-      await register({ name, email, password, role: 'user' }); 
+      await register({ name, email, password, role: 'member' }); 
       navigate('/');
     } catch (error: any) {
        toast.error(error.response?.data?.message || 'Registration failed');
