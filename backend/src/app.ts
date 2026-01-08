@@ -15,6 +15,9 @@ import swaggerOptions from './config/swagger';
 
 const app: Express = express();
 
+// Trust proxy (required for Railway/Heroku/Render) to ensure secure cookies work
+app.set('trust proxy', 1);
+
 // Global Middlewares
 
 // Set security HTTP headers
