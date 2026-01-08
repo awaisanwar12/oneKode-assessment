@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTeams } from '../hooks/useTeams';
-import { Team, User } from '../types';
+import { Team } from '../types';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { FaEdit } from 'react-icons/fa';
