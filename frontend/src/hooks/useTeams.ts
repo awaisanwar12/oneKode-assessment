@@ -33,11 +33,22 @@ export const useTeams = () => {
     },
   });
 
+  const updateTeamMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Team> }) => {
+      const res = await api.put(`/teams/${id}`, data);
+      return res.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+  });
+
   return {
     teams,
     isLoading,
     isError,
     createTeam: createTeamMutation.mutateAsync,
+    updateTeam: updateTeamMutation.mutateAsync,
     addMember: addMemberMutation.mutateAsync,
   };
 };

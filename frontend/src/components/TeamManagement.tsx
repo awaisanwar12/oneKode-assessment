@@ -3,11 +3,20 @@ import { useTeams } from '../hooks/useTeams';
 import { Team, User } from '../types';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { FaEdit } from 'react-icons/fa';
+import EditTeamModal from './EditTeamModal';
 
-const TeamCard = ({ team, onAddMember }: { team: Team, onAddMember: (teamId: string, email: string) => Promise<void> }) => {
+const TeamCard = ({ team, onAddMember, onEdit }: { team: Team, onAddMember: (teamId: string, email: string) => Promise<void>, onEdit: (team: Team) => void }) => {
     const [email, setEmail] = useState('');
     const { user } = useAuth();
-    const isOwner = team.createdBy === user?._id;
+    
+    // Debug logging
+    // console.log('Team Creator:', team.createdBy);
+    // console.log('Current User:', user?._id);
+    
+    // Handle both populated object and direct ID string
+    const creatorId = typeof team.createdBy === 'object' ? (team.createdBy as any)._id : team.createdBy;
+    const isOwner = creatorId === user?._id;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,7 +32,17 @@ const TeamCard = ({ team, onAddMember }: { team: Team, onAddMember: (teamId: str
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{team.name}</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">{team.name}</h3>
+                    {isOwner && (
+                        <button 
+                            onClick={() => onEdit(team)}
+                            className="text-gray-400 hover:text-blue-500 transition-colors"
+                        >
+                            <FaEdit size={14} />
+                        </button>
+                    )}
+                </div>
                 {isOwner && <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Owner</span>}
             </div>
             {team.description && <p className="text-gray-600 mb-4">{team.description}</p>}
@@ -68,10 +87,20 @@ const TeamCard = ({ team, onAddMember }: { team: Team, onAddMember: (teamId: str
 };
 
 const TeamManagement = () => {
-    const { teams, isLoading, isError, addMember } = useTeams();
+    const { teams, isLoading, isError, addMember, updateTeam } = useTeams();
+    const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
     const handleAddMember = async (teamId: string, email: string) => {
         await addMember({ teamId, email });
+    };
+
+    const handleUpdateTeam = async (id: string, data: any) => {
+        try {
+            await updateTeam({ id, data });
+            toast.success("Team updated successfully");
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to update team");
+        }
     };
 
     if (isLoading) return <div>Loading teams...</div>;
@@ -88,9 +117,22 @@ const TeamManagement = () => {
              </div>
             <div className="grid grid-cols-1 gap-6">
                 {teams.map(team => (
-                    <TeamCard key={team._id} team={team} onAddMember={handleAddMember} />
+                    <TeamCard 
+                        key={team._id} 
+                        team={team} 
+                        onAddMember={handleAddMember} 
+                        onEdit={(t) => setEditingTeam(t)}
+                    />
                 ))}
             </div>
+
+            {editingTeam && (
+                <EditTeamModal 
+                    team={editingTeam} 
+                    onClose={() => setEditingTeam(null)} 
+                    onUpdate={handleUpdateTeam}
+                />
+            )}
         </div>
     );
 };
