@@ -1,0 +1,66 @@
+name: MERN CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        mongodb-version: ['6.0']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.10.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+
+    # Backend
+    - name: Install Backend Dependencies
+      run: |
+        cd backend
+        npm ci
+
+    - name: Build Backend
+      run: |
+        cd backend
+        npm run build
+
+    - name: Run Backend Tests
+      run: |
+        cd backend
+        npm test
+      env:
+        JWT_SECRET: test_secret
+        MONGO_URI: mongodb://localhost:27017/mern-test
+
+    # Frontend
+    - name: Install Frontend Dependencies
+      run: |
+        cd frontend
+        npm ci --legacy-peer-deps
+
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm run build
+
+    # Docker Build Verification (Optional)
+    - name: Build Docker Images
+      run: |
+        docker-compose build
