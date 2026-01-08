@@ -4,20 +4,28 @@ import { Task } from '../types';
 import { FaTrash, FaEdit, FaUserCircle, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import EditTaskModal from './EditTaskModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const TaskBoard = ({ filters }: { filters?: any }) => {
-    const { tasks, isLoading, isError, updateTask, deleteTask } = useTasks(filters);
+    const { tasks: serverTasks, isLoading, isError, updateTask, deleteTask } = useTasks(filters);
+    const [localTasks, setLocalTasks] = useState<Task[]>([]);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-    if (isLoading) return <div>Loading board...</div>;
+    // Sync local state with server state
+    useEffect(() => {
+        if (serverTasks) {
+            setLocalTasks(serverTasks);
+        }
+    }, [serverTasks]);
+
+    if (isLoading && localTasks.length === 0) return <div>Loading board...</div>;
     if (isError) return <div>Error loading board.</div>;
 
     const columns = {
-        todo: { name: 'To Do', items: tasks?.filter(t => t.status === 'todo') || [] },
-        in_progress: { name: 'In Progress', items: tasks?.filter(t => t.status === 'in_progress') || [] },
-        review: { name: 'Review', items: tasks?.filter(t => t.status === 'review') || [] },
-        done: { name: 'Done', items: tasks?.filter(t => t.status === 'done') || [] }
+        todo: { name: 'To Do', items: localTasks.filter(t => t.status === 'todo') || [] },
+        in_progress: { name: 'In Progress', items: localTasks.filter(t => t.status === 'in_progress') || [] },
+        review: { name: 'Review', items: localTasks.filter(t => t.status === 'review') || [] },
+        done: { name: 'Done', items: localTasks.filter(t => t.status === 'done') || [] }
     };
 
     const onDragEnd = async (result: DropResult) => {
@@ -26,9 +34,16 @@ const TaskBoard = ({ filters }: { filters?: any }) => {
         const { source, destination, draggableId } = result;
 
         if (source.droppableId !== destination.droppableId) {
-             // Optimistic update could be done here for smoother UI
+             // 1. Optimistic update local state immediately
+             const newStatus = destination.droppableId as 'todo' | 'in_progress' | 'review' | 'done';
+             
+             setLocalTasks(prev => prev.map(t => 
+                t._id === draggableId 
+                ? { ...t, status: newStatus } 
+                : t
+             ));
             
-            // Call API to update status
+            // 2. Call API to update status
             try {
                 await updateTask({
                     id: draggableId,
@@ -36,6 +51,9 @@ const TaskBoard = ({ filters }: { filters?: any }) => {
                 });
             } catch (error) {
                 console.error("Failed to update task status", error);
+                // Revert local state on error could be implemented here if needed, 
+                // but useTasks onError should handle query refetching
+                toast.error("Failed to move task");
             }
         }
     };
