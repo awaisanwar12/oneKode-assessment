@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe } from '../controllers/auth.controller';
+import { register, login, getMe, logout } from '../controllers/auth.controller';
 import { protect } from '../middleware/auth.middleware';
 
 const router = express.Router();
@@ -89,5 +89,17 @@ router.post('/login', login);
  *         description: Current user profile retreived successfully
  */
 router.get('/me', protect, getMe);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   get:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ */
+router.get('/logout', logout);
 
 export default router;

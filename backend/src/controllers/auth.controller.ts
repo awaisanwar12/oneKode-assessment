@@ -109,3 +109,18 @@ export const getMe = async (
     next(err);
   }
 };
+
+// @desc    Log user out / clear cookie
+// @route   GET /api/auth/logout
+// @access  Private
+export const logout = (req: Request, res: Response, next: NextFunction) => {
+  res.cookie('token', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
+};
