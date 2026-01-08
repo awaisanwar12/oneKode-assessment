@@ -11,8 +11,9 @@ const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
       Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     ),
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    // Enable secure cookies if in production OR if explicitly on Railway (even in dev mode)
+    secure: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_NAME !== undefined,
+    sameSite: (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_NAME !== undefined) ? 'none' : 'lax',
   };
 
   res
