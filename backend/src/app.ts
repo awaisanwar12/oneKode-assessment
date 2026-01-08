@@ -28,8 +28,8 @@ app.use(morganMiddleware);
 
 // Limit requests from same API
 const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
+  max: 10000,
+  windowMs: 15 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);

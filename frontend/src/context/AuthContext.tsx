@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import api from '../services/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -23,10 +23,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<User | null>(null);
 
   // Use React Query for fetching current user (Session Check)
-  const { data, isLoading, isError } = useQuery({
+  // We use this as the single source of truth for the user state
+  const { data: userData, isLoading } = useQuery({
     queryKey: ['authUser'],
     queryFn: async () => {
       try {
@@ -38,44 +38,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     retry: false, // Don't retry if 401
     refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // Consider user data fresh for 5 minutes
   });
 
-  // Sync React Query data with local state
-  useEffect(() => {
-    console.log('AuthContext Effect:', { data, isLoading, isError, userState: user });
-    if (data) {
-      console.log('Setting user from Query Data:', data);
-      setUser(data);
-    } else if (isError || (data === null && !isLoading)) {
-       console.log('Clearing user state');
-       setUser(null);
-    }
-  }, [data, isError, isLoading]);
+  const user = userData || null;
 
-  const login = async (userData: any) => {
-    console.log('Login called with:', userData);
-    const res = await api.post('/auth/login', userData);
-    console.log('Login Response:', res.data);
-    
-    // Set user immediately if backend returns it
+  const login = async (loginData: any) => {
+    const res = await api.post('/auth/login', loginData);
     const userFromResponse = res.data.data || res.data.user;
+    
+    // Update the query data immediately
     if (userFromResponse) {
-        setUser(userFromResponse);
+        queryClient.setQueryData(['authUser'], userFromResponse);
     }
     
-    // Invalidate query to ensure data consistency
+    // Invalidate to be safe
     await queryClient.invalidateQueries({ queryKey: ['authUser'] });
   };
 
-  const register = async (userData: any) => {
-    const res = await api.post('/auth/register', userData);
-    setUser(res.data.data || res.data.user);
-    queryClient.invalidateQueries({ queryKey: ['authUser'] });
+  const register = async (registerData: any) => {
+    const res = await api.post('/auth/register', registerData);
+    const userFromResponse = res.data.data || res.data.user;
+    
+    if (userFromResponse) {
+        queryClient.setQueryData(['authUser'], userFromResponse);
+    }
+    await queryClient.invalidateQueries({ queryKey: ['authUser'] });
   };
 
   const logout = async () => {
-    await api.get('/auth/logout'); // Assuming you implement a logout endpoint that clears cookie
-    setUser(null);
+    try {
+        await api.get('/auth/logout');
+    } catch (error) {
+        console.error("Logout failed", error);
+    }
     queryClient.setQueryData(['authUser'], null);
     queryClient.clear();
   };
