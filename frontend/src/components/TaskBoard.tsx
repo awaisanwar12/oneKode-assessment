@@ -1,11 +1,14 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useTasks } from '../hooks/useTasks';
 import { Task } from '../types';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaUserCircle, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import EditTaskModal from './EditTaskModal';
+import { useState } from 'react';
 
 const TaskBoard = ({ filters }: { filters?: any }) => {
     const { tasks, isLoading, isError, updateTask, deleteTask } = useTasks(filters);
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     if (isLoading) return <div>Loading board...</div>;
     if (isError) return <div>Error loading board.</div>;
@@ -95,22 +98,37 @@ const TaskBoard = ({ filters }: { filters?: any }) => {
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
                                                             {task.priority.toUpperCase()}
                                                         </span>
-                                                        <button 
-                                                            onClick={(e) => handleDelete(e, task._id)}
-                                                            className="text-gray-400 hover:text-red-500 transition-colors"
-                                                            title="Delete Task"
-                                                        >
-                                                            <FaTrash size={12} />
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                            <button 
+                                                                onClick={() => setEditingTask(task)}
+                                                                className="text-gray-400 hover:text-blue-500 transition-colors"
+                                                                title="Edit Task"
+                                                            >
+                                                                <FaEdit size={12} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={(e) => handleDelete(e, task._id)}
+                                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                title="Delete Task"
+                                                            >
+                                                                <FaTrash size={12} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     <h4 className="text-sm font-bold text-gray-800 mb-1">{task.title}</h4>
                                                      {task.description && (
                                                         <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>
                                                      )}
                                                      
-                                                     <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 text-xs text-gray-400">
-                                                        <span>{new Date(task.createdAt).toLocaleDateString()}</span>
-                                                        {/* Optional: Add assignee avatar here */}
+                                                     <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 text-xs text-gray-500">
+                                                        <div className="flex items-center gap-1" title="Due Date">
+                                                            <FaCalendarAlt size={10} />
+                                                            <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Date'}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1" title={task.assignedTo ? `Assigned to: ${task.assignedTo.name}` : 'Unassigned'}>
+                                                            <FaUserCircle size={12} className={task.assignedTo ? 'text-blue-500' : 'text-gray-300'} />
+                                                            <span>{task.assignedTo ? task.assignedTo.name.split(' ')[0] : 'Unassigned'}</span>
+                                                        </div>
                                                      </div>
                                                 </div>
                                             )}
@@ -123,6 +141,17 @@ const TaskBoard = ({ filters }: { filters?: any }) => {
                     </div>
                 ))}
             </DragDropContext>
+            {editingTask && (
+                <EditTaskModal 
+                    task={editingTask} 
+                    onClose={() => setEditingTask(null)} 
+                    onUpdate={async (id, data) => {
+                        await updateTask({id, data});
+                        setEditingTask(null);
+                        toast.success("Task updated");
+                    }}
+                />
+            )}
         </div>
     );
 };
