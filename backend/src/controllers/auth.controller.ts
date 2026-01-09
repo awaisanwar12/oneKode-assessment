@@ -123,6 +123,8 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
+    secure: true, 
+    sameSite: 'none',
   });
 
   res.status(200).json({
