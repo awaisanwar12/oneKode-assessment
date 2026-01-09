@@ -11,9 +11,10 @@ const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
       Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     ),
     httpOnly: true,
-    // Enable secure cookies if in production OR if explicitly on Railway (even in dev mode)
-    secure: process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_NAME !== undefined,
-    sameSite: (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_NAME !== undefined) ? 'none' : 'lax',
+    // Force secure/none for cross-site usage (Netlify -> Railway)
+    // This works on localhost too in modern browsers (User is likely using Chrome/Edge/Firefox)
+    secure: true,
+    sameSite: 'none', 
   };
 
   res
