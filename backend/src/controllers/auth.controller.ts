@@ -48,7 +48,11 @@ export const register = async (
       role,
     });
 
-    sendTokenResponse(user, 201, res);
+    // Instead of auto-login, send success message
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully. Please login.',
+    });
   } catch (err) {
     next(err);
   }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,13 @@ function Register() {
 
   const { name, email, password, confirmPassword } = formData;
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevState) => ({
@@ -32,7 +38,8 @@ function Register() {
 
     try {
       await register({ name, email, password, role: 'member' }); 
-      navigate('/');
+      toast.success('Registration successful! Please login.');
+      navigate('/login');
     } catch (error: any) {
        toast.error(error.response?.data?.message || 'Registration failed');
     }

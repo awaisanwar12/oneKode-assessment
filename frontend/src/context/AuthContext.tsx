@@ -50,6 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Update the query data immediately
     if (userFromResponse) {
         queryClient.setQueryData(['authUser'], userFromResponse);
+    } else {
+        throw new Error('Login failed: Invalid response from server');
     }
     
     // Invalidate to be safe
@@ -57,13 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (registerData: any) => {
-    const res = await api.post('/auth/register', registerData);
-    const userFromResponse = res.data.data || res.data.user;
-    
-    if (userFromResponse) {
-        queryClient.setQueryData(['authUser'], userFromResponse);
-    }
-    await queryClient.invalidateQueries({ queryKey: ['authUser'] });
+    // Just post to register, don't expect user data back for auto-login
+    await api.post('/auth/register', registerData);
   };
 
   const logout = async () => {
